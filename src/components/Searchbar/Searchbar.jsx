@@ -1,67 +1,57 @@
 import { FaSearch } from 'react-icons/fa';
-import { Component } from 'react';
+import { useState } from 'react';
 import Box from 'components/shared/Box';
 import IconButton from 'components/shared/IconButton';
 import theme from 'theme';
 import { Form, Input } from './Searchbar.styled';
 import propTypes from 'prop-types';
 
-class Searchbar extends Component {
-  state = {
-    searchQuery: '',
+const Searchbar = ({ onSubmit }) => {
+  const [searchQuery, setSearchQuery] = useState('');
+
+  const handleChanges = ({ target }) => {
+    const { value } = target;
+    setSearchQuery(value.toLowerCase().trim());
   };
 
-  handleChanges = ({ target }) => {
-    const { name, value } = target;
-    this.setState({ [name]: value.toLowerCase().trim() });
-  };
-
-  handleSubmit = e => {
+  const handleSubmit = e => {
     e.preventDefault();
-    this.props.onSubmit({ ...this.state });
-    this.resetSearchQuery();
+    onSubmit(searchQuery);
+    setSearchQuery('');
   };
 
-  resetSearchQuery = () => {
-    this.setState({ searchQuery: '' });
-  };
-
-  render() {
-    const { handleChanges, handleSubmit } = this;
-    const { searchQuery, isSubmitting } = this.state;
-    return (
-      <Box
-        as="header"
-        backgroundColor="secondary"
-        ml="auto"
-        mr="auto"
-        pt={[5]}
-        pb={[5]}
-        boxShadow={theme.shadow.high}
-      >
-        <Box variant="container" display="flex" justifyContent="center">
-          <Form onSubmit={handleSubmit}>
-            <Input
-              onChange={handleChanges}
-              value={searchQuery}
-              name="searchQuery"
-              required
-            />
-            <IconButton
-              className="searchButton"
-              type="submit"
-              icon={FaSearch}
-              iconSize={12}
-              disabled={!isSubmitting && searchQuery.length > 0 ? false : true}
-              ariaLable="search button"
-              round={true}
-            ></IconButton>
-          </Form>
-        </Box>
+  return (
+    <Box
+      as="header"
+      backgroundColor="secondary"
+      ml="auto"
+      mr="auto"
+      pt={[5]}
+      pb={[5]}
+      boxShadow={theme.shadow.high}
+    >
+      <Box variant="container" display="flex" justifyContent="center">
+        <Form onSubmit={handleSubmit}>
+          <Input
+            onChange={handleChanges}
+            value={searchQuery}
+            name="searchQuery"
+            required
+          />
+          <IconButton
+            className="searchButton"
+            type="submit"
+            icon={FaSearch}
+            iconSize={12}
+            disabled={searchQuery.length > 0 ? false : true}
+            ariaLable="search button"
+            round={true}
+          ></IconButton>
+        </Form>
       </Box>
-    );
-  }
-}
+    </Box>
+  );
+};
 
 export default Searchbar;
 
