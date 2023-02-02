@@ -9,10 +9,8 @@ import propTypes from 'prop-types';
 const Searchbar = ({ onSubmit }) => {
   const [searchQuery, setSearchQuery] = useState('');
 
-  const handleChanges = ({ target }) => {
-    const { value } = target;
-    setSearchQuery(value.toLowerCase().trim());
-  };
+  const handleChanges = e =>
+    setSearchQuery(e.target.value.toLowerCase().trim());
 
   const handleSubmit = e => {
     e.preventDefault();

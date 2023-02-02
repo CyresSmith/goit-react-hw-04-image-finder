@@ -1,19 +1,17 @@
 import { useState, useEffect } from 'react';
 import { Report } from 'notiflix/build/notiflix-report-aio';
+import { TiArrowUpThick } from 'react-icons/ti';
 import Searchbar from './Searchbar';
 import ImageGallery from './ImageGallery';
 import fetchImages from './shared/Services/fetchImages';
 import Section from './shared/Section';
 import Modal from './Modal';
-
-const searchQueryInitialState = {
-  query: '',
-  page: 1,
-  perPage: 30,
-};
+import ScrollUpBtn from './shared/ScrollUpButton/ScrollUpBtn';
 
 const App = () => {
-  const [searchQuery, setSearchQuery] = useState(searchQueryInitialState);
+  const perPage = 30;
+  const [searchQuery, setSearchQuery] = useState('');
+  const [page, setPage] = useState(1);
   const [data, setData] = useState([]);
   const [totalHits, setTotalHits] = useState(null);
   const [showModal, setShowModal] = useState(false);
@@ -22,21 +20,19 @@ const App = () => {
   const [error, setError] = useState('');
 
   useEffect(() => {
+    if (searchQuery === '') {
+      return;
+    }
     setLoading(true);
-    const { query, page, perPage } = searchQuery;
-    fetchData(query, page, perPage)
+    fetchData(searchQuery, page, perPage)
       .then(result => setData(prevState => [...prevState, ...result]))
       .catch(error => setError(error.message))
       .finally(() => setLoading(false));
-  }, [searchQuery]);
+  }, [searchQuery, page]);
 
-  const handleSearchQuery = searchQuery => {
-    setSearchQuery(prevState => ({ ...prevState, query: searchQuery }));
-  };
-
-  const fetchData = async (query, page, perPage) => {
+  const fetchData = async (searchQuery, page, perPage) => {
     try {
-      const { hits, totalHits } = await fetchImages(query, page, perPage);
+      const { hits, totalHits } = await fetchImages(searchQuery, page, perPage);
       if (hits.length === 0) {
         Report.failure('No images found for Your request!');
       }
@@ -47,15 +43,18 @@ const App = () => {
     }
   };
 
+  const handleSearchQuery = query => {
+    setData([]);
+    setPage(1);
+    setSearchQuery(query);
+  };
+
   const toggleModal = () => {
     setShowModal(prevState => !prevState);
   };
 
   const loadMore = () => {
-    setSearchQuery(prevState => {
-      const { page } = prevState;
-      return { ...prevState, page: page + 1 };
-    });
+    setPage(prevState => prevState + 1);
   };
 
   const body = document.querySelector('body');
@@ -69,7 +68,7 @@ const App = () => {
       <Section
         title={
           !loading && totalHits
-            ? `Here are Your ${totalHits} pictures for query "${searchQuery.query}".`
+            ? `Here are Your ${totalHits} pictures for query "${searchQuery}".`
             : 'Start search images!'
         }
         titleVariant="subTitle"
@@ -81,11 +80,16 @@ const App = () => {
           setImg={setModalImg}
           loading={loading}
           loadMore={loadMore}
-          page={searchQuery.page}
-          perPage={searchQuery.perPage}
+          page={page}
+          perPage={perPage}
           totalHits={totalHits}
         />
       </Section>
+      <ScrollUpBtn
+        icon={TiArrowUpThick}
+        iconSize={30}
+        round={true}
+      ></ScrollUpBtn>
       {showModal && (
         <Modal
           onClick={toggleModal}
