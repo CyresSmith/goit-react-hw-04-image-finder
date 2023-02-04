@@ -20,6 +20,10 @@ export const StyledButton = styled('button')`
   transition-duration: 250ms;
   transition-timing-function: ease-in-out;
 
+  :disabled {
+    pointer-events: none;
+  }
+
   :hover:not(:disabled) {
     background-color: ${theme.colors.accent};
     box-shadow: ${theme.shadow.high};
