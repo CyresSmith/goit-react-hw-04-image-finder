@@ -1,22 +1,15 @@
+import propTypes from 'prop-types';
+import { memo } from 'react';
 import { FaSearch } from 'react-icons/fa';
-import { useState } from 'react';
+
 import Box from 'components/shared/Box';
 import IconButton from 'components/shared/IconButton';
 import theme from 'theme';
 import { Form, Input } from './Searchbar.styled';
-import propTypes from 'prop-types';
+import useForm from './useForm';
 
 const Searchbar = ({ onSubmit }) => {
-  const [searchQuery, setSearchQuery] = useState('');
-
-  const handleChanges = e =>
-    setSearchQuery(e.target.value.toLowerCase().trim());
-
-  const handleSubmit = e => {
-    e.preventDefault();
-    onSubmit(searchQuery);
-    setSearchQuery('');
-  };
+  const { state, handleChange, handleSubmit } = useForm(onSubmit);
 
   return (
     <Box
@@ -31,9 +24,9 @@ const Searchbar = ({ onSubmit }) => {
       <Box variant="container" display="flex" justifyContent="center">
         <Form onSubmit={handleSubmit}>
           <Input
-            onChange={handleChanges}
-            value={searchQuery}
-            name="searchQuery"
+            onChange={handleChange}
+            value={state.query ? state.query : ''}
+            name="query"
             required
           />
           <IconButton
@@ -41,7 +34,7 @@ const Searchbar = ({ onSubmit }) => {
             type="submit"
             icon={FaSearch}
             iconSize={12}
-            disabled={searchQuery.length > 0 ? false : true}
+            disabled={state.query?.length > 0 ? false : true}
             ariaLable="search button"
             round={true}
           ></IconButton>
@@ -51,7 +44,7 @@ const Searchbar = ({ onSubmit }) => {
   );
 };
 
-export default Searchbar;
+export default memo(Searchbar);
 
 Searchbar.propTypes = {
   onSubmit: propTypes.func.isRequired,

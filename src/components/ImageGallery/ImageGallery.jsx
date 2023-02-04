@@ -4,6 +4,7 @@ import { TfiMoreAlt } from 'react-icons/tfi';
 import Gallery from './ImageGallery.styled';
 import ImageGalleryItem from './ImageGalleryItem/ImageGalleryItem';
 import Button from 'components/shared/Button';
+import { memo } from 'react';
 
 const ImageGallery = ({
   onClick,
@@ -45,4 +46,4 @@ const ImageGallery = ({
   );
 };
 
-export default ImageGallery;
+export default memo(ImageGallery);

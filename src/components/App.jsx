@@ -7,10 +7,12 @@ import fetchImages from './shared/Services/fetchImages';
 import Section from './shared/Section';
 import Modal from './Modal';
 import ScrollUpBtn from './shared/ScrollUpButton/ScrollUpBtn';
+import { useCallback } from 'react';
+import { useLockBodyScroll, useToggle } from 'react-use';
 
 const App = () => {
   const perPage = 30;
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchQuery, setSearchQuery] = useState({});
   const [page, setPage] = useState(1);
   const [data, setData] = useState([]);
   const [totalHits, setTotalHits] = useState(null);
@@ -19,56 +21,66 @@ const App = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
+  const { query } = searchQuery;
+
   useEffect(() => {
-    if (searchQuery === '') {
+    if (!query) {
       return;
     }
     setLoading(true);
-    fetchData(searchQuery, page, perPage)
+
+    const fetchData = async () => {
+      try {
+        const { hits, totalHits } = await fetchImages(query, page, perPage);
+        if (hits.length === 0) {
+          Report.failure('No images found for Your request!');
+        }
+        setTotalHits(totalHits);
+        return hits;
+      } catch (error) {
+        setError(error.message);
+      }
+    };
+
+    fetchData()
       .then(result => setData(prevState => [...prevState, ...result]))
       .catch(error => setError(error.message))
       .finally(() => setLoading(false));
-  }, [searchQuery, page]);
+  }, [query, page]);
 
-  const fetchData = async (searchQuery, page, perPage) => {
-    try {
-      const { hits, totalHits } = await fetchImages(searchQuery, page, perPage);
-      if (hits.length === 0) {
-        Report.failure('No images found for Your request!');
+  const handleSearchQuery = useCallback(searchQuery => {
+    setSearchQuery(({ query: prevQuery }) => {
+      const { query } = searchQuery;
+      if (prevQuery === query) {
+        return searchQuery;
+      } else {
+        setData([]);
+        setPage(1);
+        return searchQuery;
       }
-      setTotalHits(totalHits);
-      return hits;
-    } catch (error) {
-      setError(error.message);
-    }
-  };
+    });
+  }, []);
 
-  const handleSearchQuery = query => {
-    setData([]);
-    setPage(1);
-    setSearchQuery(query);
-  };
-
-  const toggleModal = () => {
+  const toggleModal = useCallback(() => {
     setShowModal(prevState => !prevState);
-  };
+  }, []);
 
-  const loadMore = () => {
+  const loadMore = useCallback(() => {
     setPage(prevState => prevState + 1);
-  };
+  }, []);
 
-  const body = document.querySelector('body');
+  // const body = document.querySelector('body');
 
   return (
     <>
-      {showModal
+      {/* {showModal
         ? body.classList.add('overflow-hidden')
-        : body.classList.remove('overflow-hidden')}
+        : body.classList.remove('overflow-hidden')} */}
       <Searchbar onSubmit={handleSearchQuery} />
       <Section
         title={
           !loading && totalHits
-            ? `Here are Your ${totalHits} pictures for query "${searchQuery}".`
+            ? `Here are Your ${totalHits} pictures for query "${query}".`
             : 'Start search images!'
         }
         titleVariant="subTitle"
@@ -93,6 +105,7 @@ const App = () => {
       {showModal && (
         <Modal
           onClick={toggleModal}
+          showModal={showModal}
           children={<img src={modalImg.imgUrl} alt={modalImg.alt} />}
         ></Modal>
       )}
